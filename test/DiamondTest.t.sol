@@ -5,49 +5,67 @@ import "forge-std/Test.sol";
 import "../src/Diamond.sol";
 import "../src/facets/CounterFacet.sol";
 import "../src/facets/MessageFacet.sol";
+import "../src/facets/TimestampFacet.sol";
 
 contract DiamondTest is Test {
     Diamond diamond;
     CounterFacet counterFacet;
     MessageFacet messageFacet;
+    TimestampFacet timestampFacet;
 
     function setUp() public {
         // Deploy contracts
         diamond = new Diamond();
         counterFacet = new CounterFacet();
         messageFacet = new MessageFacet();
-
-        // Get function selectors for counter functions
-        bytes4 incrementSelector = counterFacet.increment.selector;
-        bytes4 getCountSelector = counterFacet.getCount.selector;
-        bytes4 getMessageSelector = messageFacet.getMessage.selector;
-        bytes4 setMessageSelector = messageFacet.setMessage.selector;
+        timestampFacet = new TimestampFacet();
 
         // Add functions to diamond
-        diamond.addFunction(address(counterFacet), incrementSelector);
-        diamond.addFunction(address(counterFacet), getCountSelector);
-        diamond.addFunction(address(messageFacet), setMessageSelector);
-        diamond.addFunction(address(messageFacet), getMessageSelector);
+        diamond.addFunction(address(counterFacet), counterFacet.increment.selector);
+        diamond.addFunction(address(counterFacet), counterFacet.getCount.selector);
+        diamond.addFunction(address(messageFacet), messageFacet.setMessage.selector);
+        diamond.addFunction(address(messageFacet), messageFacet.getMessage.selector);
+        diamond.addFunction(address(timestampFacet), timestampFacet.setTimestamp.selector);
     }
 
-    function test_Counter() public {
-        // Create interface to interact with diamond
-        CounterFacet diamondAsCounter = CounterFacet(address(diamond)); // Cast diamond address as CounterFacet type
+    function test_ExtendedStorage() public {
+        CounterFacet diamondAsCounter = CounterFacet(address(diamond));
+        TimestampFacet diamondAsTimestamp = TimestampFacet(address(diamond));
 
         // Initial count should be 0
         assertEq(diamondAsCounter.getCount(), 0);
 
-        // Increment counter
-        diamondAsCounter.increment();
+        // Set timestamp (which also increments count)
+        diamondAsTimestamp.setTimestamp();
 
-        // Count should be 1
+        // Count should be incremented
         assertEq(diamondAsCounter.getCount(), 1);
     }
 
-    function test_Message() public {
+    function test_MultipleStorageInteractions() public {
+        CounterFacet diamondAsCounter = CounterFacet(address(diamond));
         MessageFacet diamondAsMessage = MessageFacet(address(diamond));
-        assertEq(diamondAsMessage.getMessage(), "");
-        diamondAsMessage.setMessage("Hello, World!");
-        assertEq(diamondAsMessage.getMessage(), "Hello, World!");
+        TimestampFacet diamondAsTimestamp = TimestampFacet(address(diamond));
+
+        // Interact with all facets
+        diamondAsMessage.setMessage("Hello"); // count += 1
+        diamondAsCounter.increment(); // count += 1
+        diamondAsTimestamp.setTimestamp(); // count += 1
+
+        // Final count should be 3
+        assertEq(diamondAsCounter.getCount(), 3);
+
+        // Check message
+        assertEq(diamondAsMessage.getMessage(), "Hello");
+    }
+
+    function testFuzz_TimestampUpdate(address caller) public {
+        vm.assume(caller != address(0));
+
+        TimestampFacet diamondAsTimestamp = TimestampFacet(address(diamond));
+
+        // Call setTimestamp as different addresses
+        vm.prank(caller);
+        diamondAsTimestamp.setTimestamp();
     }
 }
