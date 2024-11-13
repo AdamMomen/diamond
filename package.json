@@ -1,0 +1,19 @@
+{
+  "name": "diamond",
+  "version": "1.0.0",
+  "description": "Diamond sandbox",
+  "main": "index.js",
+  "repository": "git@github.com:AdamMomen/diamond.git",
+  "author": "Adam Momen <adammuman81@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "viem": "^2.21.45"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}
