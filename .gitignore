@@ -10,3 +10,4 @@ lib/*
 broadcast/*
 cache/*
 .env
+node_modules/*
