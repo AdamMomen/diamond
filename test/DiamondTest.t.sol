@@ -21,11 +21,41 @@ contract DiamondTest is Test {
         timestampFacet = new TimestampFacet();
 
         // Add functions to diamond
-        diamond.addFunction(address(counterFacet), counterFacet.increment.selector);
-        diamond.addFunction(address(counterFacet), counterFacet.getCount.selector);
-        diamond.addFunction(address(messageFacet), messageFacet.setMessage.selector);
-        diamond.addFunction(address(messageFacet), messageFacet.getMessage.selector);
-        diamond.addFunction(address(timestampFacet), timestampFacet.setTimestamp.selector);
+        IDiamondCut.FacetCut[] memory cuts = new IDiamondCut.FacetCut[](3);
+
+        // Counter selectors
+        bytes4[] memory counterSelectors = new bytes4[](2);
+        counterSelectors[0] = counterFacet.increment.selector;
+        counterSelectors[1] = counterFacet.getCount.selector;
+
+        // Message selectors - need both setMessage and getMessage
+        bytes4[] memory messageSelectors = new bytes4[](2); // Changed from 1 to 2
+        messageSelectors[0] = messageFacet.setMessage.selector;
+        messageSelectors[1] = messageFacet.getMessage.selector; // Added this
+
+        // Timestamp selectors
+        bytes4[] memory timestampSelectors = new bytes4[](1);
+        timestampSelectors[0] = timestampFacet.setTimestamp.selector;
+
+        cuts[0] = IDiamondCut.FacetCut({
+            facetAddress: address(counterFacet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: counterSelectors
+        });
+
+        cuts[1] = IDiamondCut.FacetCut({
+            facetAddress: address(messageFacet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: messageSelectors
+        });
+
+        cuts[2] = IDiamondCut.FacetCut({
+            facetAddress: address(timestampFacet),
+            action: IDiamondCut.FacetCutAction.Add,
+            functionSelectors: timestampSelectors
+        });
+
+        diamond.diamondCut(cuts, address(0), "");
     }
 
     function test_ExtendedStorage() public {
