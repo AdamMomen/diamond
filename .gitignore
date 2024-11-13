@@ -1,0 +1,9 @@
+.history
+.vscode
+.solc
+.solc-version
+.solc-upgrade
+.solc-upgrade-history
+
+out/*
+lib/*
