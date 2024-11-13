@@ -7,13 +7,13 @@ import "forge-std/console.sol";
 contract CounterFacet {
     // Use the shared storage
     function increment() external {
-        AppStorage storage s = LibAppStorage.diamondStorage();
+        AppStorage storage s = LibAppStorage.getStorage();
         uint256 oldCount = s.count;
         s.count += 1;
         console.log("Counter incremented from:", oldCount, "to:", s.count);
     }
 
     function getCount() external view returns (uint256) {
-        return LibAppStorage.diamondStorage().count;
+        return LibAppStorage.getStorage().count;
     }
 }

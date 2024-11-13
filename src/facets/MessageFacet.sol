@@ -6,13 +6,13 @@ import "../libraries/LibAppStorage.sol";
 contract MessageFacet {
     // Use the same shared storage
     function setMessage(string calldata _message) external {
-        AppStorage storage s = LibAppStorage.diamondStorage();
+        AppStorage storage s = LibAppStorage.getStorage();
         s.message = _message;
         // Can also access count from here
         s.count += 1; // Increment count when setting message
     }
 
     function getMessage() external view returns (string memory) {
-        return LibAppStorage.diamondStorage().message;
+        return LibAppStorage.getStorage().message;
     }
 }

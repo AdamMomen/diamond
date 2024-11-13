@@ -6,8 +6,8 @@ import "../libraries/LibAppStorage.sol";
 contract TimestampFacet {
     function setTimestamp() external {
         // It's important to access both storages independently
-        AppStorageExt storage ext = LibAppStorage.diamondStorageExt();
-        AppStorage storage original = LibAppStorage.diamondStorage();
+        AppStorageExt storage ext = LibAppStorage.getStorageExt();
+        AppStorage storage original = LibAppStorage.getStorage();
 
         ext.timestamp = block.timestamp;
         ext.lastCaller = msg.sender;
@@ -16,10 +16,10 @@ contract TimestampFacet {
     }
 
     function getTimestamp() external view returns (uint256) {
-        return LibAppStorage.diamondStorageExt().timestamp;
+        return LibAppStorage.getStorageExt().timestamp;
     }
 
     function getLastCaller() external view returns (address) {
-        return LibAppStorage.diamondStorageExt().lastCaller;
+        return LibAppStorage.getStorageExt().lastCaller;
     }
 }
